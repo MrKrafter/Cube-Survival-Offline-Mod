@@ -1,21 +1,20 @@
 # Cube Survival Offline Mod
 
-Cube Survival: LDoE давно не запускается: серверы выключили, из Google Play игру убрали. Здесь лежит офлайн-патч, который возвращает её к жизни, и мод-меню в придачу. Играть можно совсем без интернета.
+Cube Survival: LDoE давно не работает: серверы выключили и из Google Play игру убрали в 2020 году. Здесь лежит офлайн-патч, который возвращает её к жизни, так ещё и мод-меню в придачу.
+
+Это мой первый проект публично опубликованный на GitHub, а также первый публичный проект связанный с игрой для Android. Позднее я бы хотел довести игру до ума и внести в неё контента, а также восстановить тот, что уже в игре есть, но работает лишь частично. Новости проекта, а также многое другое можете найти тут: https://t.me/cubesurvival
 
 English version below.
-
-Новости проекта: https://t.me/cubesurvival
 
 ## Русский
 
 ### Что внутри
 - офлайн-сервер внутри игры: библиотека `libcubefix.so` отвечает игре вместо серверов разработчика;
 - мод-меню: бог, ноуклип, бесплатный крафт и магазин, выдача любых предметов, открытие всех локаций, ивенты на карте и другое;
-- исправления багов самой игры: СВД и револьвер, тактический рюкзак, бесконечные загрузки карты из-за осад и сломанных ивентов;
-- совместимость с новыми версиями Android;
-- в настройках вместо кнопки Facebook («Dev blog») теперь кнопка Telegram, она ведёт в канал проекта.
+- исправления багов самой игры: СВД и револьвер теперь работоспособны, как и тактический рюкзак с хранилищем. Бесконечные загрузки карты из-за осад и сломанных ивентов починены;
+- совместимость с новыми версиями Android.
 
-В репозитории нет файлов игры. APK, OBB и игровые данные берутся из вашей собственной копии игры.
+В репозитории нет файлов игры. APK, OBB и игровые данные берутся из вашей собственной копии игры!
 
 ### Как поставить
 Проще всего через патчер: он сам делает офлайн-версию из вашей копии игры, ничего собирать не нужно.
@@ -47,7 +46,7 @@ English version below.
 - осады: сервер подбирал базу другого игрока;
 - статистика.
 
-Выбор сервера при входе («Сервер 1-6» с цветными пометками загруженности) был бутафорским. Список вместе с «загруженностью» лежит прямо в файлах игры, а выбранное название только записывается в профиль. Все игроки ходили на один и тот же сервер.
+Выбор сервера при входе («Сервер 1-6» с цветными пометками загруженности) был липовым. Список вместе с «загруженностью» лежит прямо в файлах игры, а выбранное название только записывается в профиль. Все игроки ходили на один и тот же сервер.
 
 ### Как устроен офлайн
 `libcubefix.so` загружается при старте игры и перехватывает в il2cpp-коде классы, через которые игра ходит в сеть. На каждый запрос игра получает ответ от встроенного «сервера»: конфиг, время, офлайн-аккаунт, данные игры (они зашиты в библиотеку) и «ок» на каждое сохранение. Сохранения поэтому только локальные. Вход в Google Play Игры пропускается, потому что у переподписанной игры он падает.
@@ -137,18 +136,17 @@ MrKrafter с помощью Claude.
 
 ## English
 
-Cube Survival: LDoE stopped working long ago: the servers were shut down and the game was pulled from Google Play. This is an offline patch that brings it back, with a mod menu thrown in. You can play with no internet at all.
+Cube Survival: LDoE doesn't work anymore: the servers were shut down and the game was pulled from Google Play in 2020. This is an offline patch that brings it back to life, with a mod menu on top of that.
 
-Project news: https://t.me/cubesurvival
+This is my first project published on GitHub, and also my first public project for an Android game. Later I'd like to polish the game and add content to it, and also restore what is already in the game but only partly works. You can find the project news and much more here: https://t.me/cubesurvival
 
 ### What's inside
 - an offline server inside the game: `libcubefix.so` answers in place of the developer's servers;
 - a mod menu: god mode, noclip, free crafting and shop, any item, every location unlocked, map events and more;
-- fixes for bugs in the game itself: the SVD and revolver, the tactical backpack, endless map loading caused by sieges and broken events;
-- compatibility fixes for newer Android versions;
-- in Settings, the Facebook button ("Dev blog") is now a Telegram button that opens the project channel.
+- fixes for bugs in the game itself: the SVD and revolver work now, and so do the tactical backpack and storage. Endless map loading caused by sieges and broken events is fixed;
+- compatibility with newer Android versions.
 
-The repository contains no game files. The APK, OBB and game data come from your own copy of the game.
+The repository contains no game files. The APK, OBB and game data come from your own copy of the game!
 
 ### Installing
 The easiest way is the patcher: it makes the offline build from your copy of the game, no building required.
@@ -180,7 +178,7 @@ The original wouldn't start at all without a connection. The developer's server 
 - sieges: the server picked another player's base for you;
 - analytics.
 
-The server choice at login ("Server 1-6" with colored load labels) was just for show. The list, "load" included, sits right in the game files, and the name you pick only goes into your profile. Everyone played on the same server.
+The server choice at login ("Server 1-6" with colored load labels) was fake. The list, "load" included, sits right in the game files, and the name you pick only goes into your profile. Everyone played on the same server.
 
 ### How the offline part works
 `libcubefix.so` loads when the game starts and hooks the il2cpp classes the game uses for networking. Every request gets an answer from the built-in "server": the config, the time, an offline account, the game data (packed into the library) and "ok" for every save. Saves are therefore local only. Google Play Games sign-in is skipped, since it crashes in a re-signed game.
