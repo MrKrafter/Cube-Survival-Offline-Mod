@@ -1,0 +1,33 @@
+# the game and its data (not ours)
+in/
+textassets/
+dump/
+original/
+build/
+apktool_cube/
+apktool_rec/
+out/
+*.apk
+*.obb
+*.idsig
+*.so
+# signing key: SECRET
+signing/
+*.keystore
+*.jks
+# toolchains and environments
+toolchain/
+sdk/
+avd/
+venv/
+.venv/
+ghidra/
+cmp/
+shots/
+modmenu/out/
+modmenu/dec/
+modmenu/*.zip
+# junk
+*.log
+__pycache__/
+*.pyc
