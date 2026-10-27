@@ -12,7 +12,8 @@ English version below.
 - офлайн-сервер внутри игры: библиотека `libcubefix.so` отвечает игре вместо серверов разработчика;
 - мод-меню: бог, ноуклип, бесплатный крафт и магазин, выдача любых предметов, открытие всех локаций, ивенты на карте и другое;
 - исправления багов самой игры: СВД и револьвер, тактический рюкзак, бесконечные загрузки карты из-за осад и сломанных ивентов;
-- совместимость с новыми версиями Android.
+- совместимость с новыми версиями Android;
+- в настройках вместо кнопки Facebook («Dev blog») теперь кнопка Telegram, она ведёт в канал проекта.
 
 В репозитории нет файлов игры. APK, OBB и игровые данные берутся из вашей собственной копии игры.
 
@@ -119,6 +120,7 @@ $env:CUBE_APKTOOL = 'C:\path\to\apktool.jar'                          # по у�
 - `cubefix/cubefix.c`: офлайн-сервер, перехват сетевых запросов;
 - `cubefix/mods.c`: хуки мод-меню, исправления багов, страховка сейвов;
 - `cubefix/refs.S`: вшивает данные игры в библиотеку;
+- `cubefix/icon.S`, `cubefix/telegram.png`: иконка кнопки Telegram (рисует `tools/make_tg_icon.py`);
 - `modmenu/`: интерфейс мод-меню на Java;
 - `patcher/`: патчер для игроков (чистый Python без зависимостей: применение разницы, сборка и подпись APK) и `make_release.py` для сборки его архива;
 - `scripts/`: сборка (`build_apk.py`, `patch_refs.py`, `extract_r14.py` и остальное нужное для неё);
@@ -143,7 +145,8 @@ Project news: https://t.me/cubesurvival
 - an offline server inside the game: `libcubefix.so` answers in place of the developer's servers;
 - a mod menu: god mode, noclip, free crafting and shop, any item, every location unlocked, map events and more;
 - fixes for bugs in the game itself: the SVD and revolver, the tactical backpack, endless map loading caused by sieges and broken events;
-- compatibility fixes for newer Android versions.
+- compatibility fixes for newer Android versions;
+- in Settings, the Facebook button ("Dev blog") is now a Telegram button that opens the project channel.
 
 The repository contains no game files. The APK, OBB and game data come from your own copy of the game.
 
@@ -250,6 +253,7 @@ The patcher zip is made after a normal build: `cubefix/build.ps1 -Slot` (the lib
 - `cubefix/cubefix.c`: the offline server and the network hooks;
 - `cubefix/mods.c`: mod menu hooks, game bug fixes, the save guard;
 - `cubefix/refs.S`: embeds the game data into the library;
+- `cubefix/icon.S`, `cubefix/telegram.png`: the Telegram button icon (drawn by `tools/make_tg_icon.py`);
 - `modmenu/`: the mod menu UI in Java;
 - `patcher/`: the patcher for players (pure Python, no dependencies: applies the diff, builds and signs the APK) and `make_release.py`, which makes its zip;
 - `scripts/`: the build (`build_apk.py`, `patch_refs.py`, `extract_r14.py` and the rest it needs);

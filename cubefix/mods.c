@@ -68,6 +68,10 @@ RVA_Component_get_gameObject = 0x207A5E0,
     RVA_GameObject_GetComponent = 0x207A680, RVA_GameObject_AddComponent = 0x20817C4,
     RVA_Canvas_get_isRootCanvas = 0x22E2324, RVA_CanvasGroup_get_alpha = 0x22E3030, RVA_CanvasGroup_set_alpha = 0x22E30A0,
     RVA_Object_get_name = 0x21AF7C0, RVA_Behaviour_get_enabled = 0x2075EA4, RVA_Behaviour_set_enabled = 0x2075F14,
+    RVA_SettingsDialog_OnShow = 0x12DC2C4, RVA_SettingsDialog_Localize = 0x12DBAAC,
+    RVA_GameObject_GetComponentsInternal = 0x2081934, RVA_Object_op_Implicit = 0x21B1FB8,
+    RVA_Image_get_sprite = 0x1A92474, RVA_Image_set_sprite = 0x1A8E134, RVA_TMP_Text_set_text = 0x178E590,
+    RVA_Texture2D_ctor = 0x226C0A4, RVA_ImageConversion_LoadImage = 0x234EB24, RVA_Sprite_Create = 0x2268E08,
 };
 // Field offsets
 #define GM_PLAYERS_MANAGER 0x54
@@ -111,6 +115,9 @@ RVA_Component_get_gameObject = 0x207A5E0,
 #define LIST_VERSION 0x10
 #define ARRAY_LENGTH 0xC
 #define ARRAY_DATA 0x10
+#define SD_CONTAINER 0x30       // SettingsDialog.Container
+#define SDC_DEVBLOG_URL 0x10    // SettingsDialogContainer.DevBlogURL
+#define SDC_DEVBLOG_BUTTON 0x14 // SettingsDialogContainer.DevBlogButton
 #define SPAWNED_EVENT_TIME (3 * 3600.0)
 #define MIN_SANE_TS 1e9               // game clock (unix seconds) before it is set
 #define MAX_EVENT_LEFT (60 * 86400.0) // no real event lasts this long
@@ -141,6 +148,8 @@ static void *(*il2cpp_type_get_object_)(const void *type);
 
 #define FIELD(obj, off, type) (*(type *)((char *)(obj) + (off)))
 #define FN(rva) ((void *)(g_base + (rva)))
+#define ARRAY_AT(arr, i) (((void **)((char *)(arr) + ARRAY_DATA))[i])
+#define ARRAY_COUNT(arr) ((arr) ? FIELD(arr, ARRAY_LENGTH, int32_t) : 0)
 
 // ---- code patching ----
 
@@ -260,6 +269,113 @@ static void h_OnSupportButtonClick(void *self, void *mi) {
         return;
     (*env)->CallStaticVoidMethod(env, g_menu, g_menu_open, ru);
     if ((*env)->ExceptionCheck(env)) (*env)->ExceptionClear(env);
+}
+
+// ---- Telegram button ----
+// Settings has a "Dev blog" button with the Facebook logo that opened the developers' page. It becomes a link to
+// the mod's Telegram channel: our URL goes into SettingsDialogContainer.DevBlogURL (the game's own click handler
+// opens it), the label reads TELEGRAM and the icon comes from telegram.png (icon.S).
+
+#define TG_URL "https://t.me/cubesurvival"
+#define TG_LABEL "TELEGRAM"
+#define TG_ICON_SIZE 128.0f
+
+extern const unsigned char cube_tg_png[];
+extern const unsigned int cube_tg_png_size;
+
+typedef struct { float x, y, w, h; } Rect;
+typedef struct { float x, y; } Vec2;
+
+static void *find_class(const char *ns, const char *name);
+static void *type_object(const char *ns, const char *name);
+
+static void (*o_SettingsDialog_OnShow)(void *, void *);
+static void (*o_SettingsDialog_Localize)(void *, void *);
+
+// Static methods in this il2cpp build take an unused first argument, see OnDevBlogButtonClick -> OpenURL.
+static void *tg_sprite(void) {
+    static void *sprite;
+    static int (*alive)(void *, void *, void *);
+    static void (*tex_ctor)(void *, int, int, void *);
+    static int (*load_image)(void *, void *, void *, void *);
+    static void *(*create)(void *, void *, Rect, Vec2, void *);
+    if (!alive) {
+        alive = FN(RVA_Object_op_Implicit), tex_ctor = FN(RVA_Texture2D_ctor);
+        load_image = FN(RVA_ImageConversion_LoadImage), create = FN(RVA_Sprite_Create);
+    }
+    if (sprite && alive(NULL, sprite, NULL)) return sprite;
+    void *tex_class = find_class("UnityEngine", "Texture2D"), *byte_class = find_class("System", "Byte");
+    if (!tex_class || !byte_class) return NULL;
+    void *tex = il2cpp_object_new_(tex_class);
+    tex_ctor(tex, 2, 2, NULL);
+    void *png = il2cpp_array_new_(byte_class, cube_tg_png_size);
+    memcpy((char *)png + ARRAY_DATA, cube_tg_png, cube_tg_png_size);
+    if (!load_image(NULL, tex, png, NULL)) {
+        LOG("telegram icon: LoadImage failed");
+        return NULL;
+    }
+    Rect r = {0, 0, TG_ICON_SIZE, TG_ICON_SIZE};
+    Vec2 pivot = {0.5f, 0.5f};
+    sprite = create(NULL, tex, r, pivot, NULL);
+    il2cpp_gchandle_new_(tex, 0);
+    il2cpp_gchandle_new_(sprite, 0);
+    return sprite;
+}
+
+static void apply_telegram_button(void *dialog) {
+    static void *url, *label, *image_type, *text_type, *localize_type;
+    static void *(*get_components)(void *, void *, int, int, int, int, void *, void *);
+    static void *(*get_game_object)(void *, void *), *(*get_name)(void *, void *);
+    static void *(*get_sprite)(void *, void *);
+    static void (*set_sprite)(void *, void *, void *), (*set_text)(void *, void *, void *);
+    static void (*set_enabled)(void *, int, void *);
+    void *container = dialog ? FIELD(dialog, SD_CONTAINER, void *) : NULL;
+    if (!container || !il2cpp_class_get_type_ || !il2cpp_type_get_object_) return;
+    if (!url) {
+        url = il2cpp_string_new_(TG_URL), label = il2cpp_string_new_(TG_LABEL);
+        il2cpp_gchandle_new_(url, 0), il2cpp_gchandle_new_(label, 0);
+        image_type = type_object("UnityEngine.UI", "Image"), text_type = type_object("TMPro", "TMP_Text");
+        localize_type = type_object("I2.Loc", "Localize");
+        get_components = FN(RVA_GameObject_GetComponentsInternal);
+        get_game_object = FN(RVA_Component_get_gameObject), get_name = FN(RVA_Object_get_name);
+        get_sprite = FN(RVA_Image_get_sprite), set_sprite = FN(RVA_Image_set_sprite);
+        set_text = FN(RVA_TMP_Text_set_text), set_enabled = FN(RVA_Behaviour_set_enabled);
+    }
+    FIELD(container, SDC_DEVBLOG_URL, void *) = url;
+    void *button = FIELD(container, SDC_DEVBLOG_BUTTON, void *);
+    if (!button) return;
+    void *go = get_game_object(button, NULL);
+    // GetComponentsInternal(type, typed array, recursive, include inactive, reverse, result list)
+    if (localize_type) {  // the label's I2 Localize would put "Dev blog" back on the next language change
+        void *locs = get_components(go, localize_type, 1, 1, 1, 0, NULL, NULL);
+        for (int i = 0; i < ARRAY_COUNT(locs); i++) set_enabled(ARRAY_AT(locs, i), 0, NULL);
+    }
+    if (text_type) {
+        void *texts = get_components(go, text_type, 1, 1, 1, 0, NULL, NULL);
+        for (int i = 0; i < ARRAY_COUNT(texts); i++) set_text(ARRAY_AT(texts, i), label, NULL);
+    }
+    void *sprite = image_type ? tg_sprite() : NULL;
+    if (!sprite) return;
+    void *images = get_components(go, image_type, 1, 1, 1, 0, NULL, NULL);
+    for (int i = 0; i < ARRAY_COUNT(images); i++) {
+        void *img = ARRAY_AT(images, i);
+        void *cur = get_sprite(img, NULL);
+        char name[64];
+        if (get_game_object(img, NULL) == go || cur == sprite) continue;  // the button background, or done
+        str_ascii(cur ? get_name(cur, NULL) : NULL, name, sizeof name);
+        if (strcmp(name, "Icon_Facebook")) continue;
+        set_sprite(img, sprite, NULL);
+    }
+}
+
+static void h_SettingsDialog_OnShow(void *self, void *mi) {
+    o_SettingsDialog_OnShow(self, mi);
+    apply_telegram_button(self);
+}
+
+static void h_SettingsDialog_Localize(void *self, void *mi) {
+    o_SettingsDialog_Localize(self, mi);
+    apply_telegram_button(self);
 }
 
 // ---- speed ----
@@ -495,8 +611,6 @@ static void *type_object(const char *ns, const char *name) {
     return k ? il2cpp_type_get_object_(il2cpp_class_get_type_(k)) : NULL;
 }
 
-#define ARRAY_AT(arr, i) (((void **)((char *)(arr) + ARRAY_DATA))[i])
-#define ARRAY_COUNT(arr) ((arr) ? FIELD(arr, ARRAY_LENGTH, int32_t) : 0)
 
 static void update_hidden_ui(int hide) {
     static void *canvas_type, *group_type, *camera_type;
@@ -1188,6 +1302,8 @@ void mods_install(uintptr_t base, void *(*sym)(const char *)) {
 
 #define H(name, rva) o_##name = hook(rva, h_##name)
     hook(RVA_SettingsDialog_OnSupportButtonClick, h_OnSupportButtonClick);
+    H(SettingsDialog_OnShow, RVA_SettingsDialog_OnShow);
+    H(SettingsDialog_Localize, RVA_SettingsDialog_Localize);
     H(MoveAction_GetSpeed, RVA_MoveAction_GetSpeed);
     H(MovePathAction_GetSpeed, RVA_MovePathAction_GetSpeed);
     H(HealthController_Attach, RVA_HealthController_Attach);

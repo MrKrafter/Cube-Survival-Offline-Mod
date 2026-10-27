@@ -8,7 +8,7 @@ Set-Location $PSScriptRoot
 $out = "libcubefix.so"
 $defs = @()
 if ($Slot) { $out = "libcubefix_slot.so"; $defs = @("-DCUBE_REFS_SLOT=0x100000") }
-& "$ndk\clang.exe" --target=armv7a-linux-androideabi21 -marm -O2 -fPIC -shared -Wall @defs -o $out cubefix.c mods.c refs.S -llog -ldl "-Wl,--no-undefined" "-Wl,-z,max-page-size=16384"
+& "$ndk\clang.exe" --target=armv7a-linux-androideabi21 -marm -O2 -fPIC -shared -Wall @defs -o $out cubefix.c mods.c refs.S icon.S -llog -ldl "-Wl,--no-undefined" "-Wl,-z,max-page-size=16384"
 if ($LASTEXITCODE -ne 0) { exit 1 }
 & "$ndk\llvm-strip.exe" $out
 "built $out " + (Get-Item $out).Length
