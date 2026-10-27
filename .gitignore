@@ -15,6 +15,10 @@ out/
 signing/
 *.keystore
 *.jks
+cube_patcher_key.json
+# patcher release data (made by patcher/make_release.py)
+patcher/data/
+*.bsdiff
 # toolchains and environments
 toolchain/
 sdk/

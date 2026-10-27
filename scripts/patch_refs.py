@@ -51,8 +51,9 @@ def reward(stack_id, stack):
     return {'type': 'single_inventory_stack', 'stack': stack_id}
 
 
-def main():
-    R = json.loads(refs_codec.dec(open(SRC, 'rb').read()))
+def patch(r14):
+    """r14 blob -> r14_mod blob (also used by patcher/cube_patcher.py)."""
+    R = json.loads(refs_codec.dec(r14))
     # The menu's item list (scripts/item_names.py) gives any stack that is an item; cut items are among them.
     give = [s for s in R['inventory_stacks'] if s in R['items']]
     assert all(item in give for item in CUT_ITEMS)
@@ -85,10 +86,14 @@ def main():
         if isinstance(view, dict) and view.get('sprite') in SPRITE_FALLBACK:
             view['sprite'] = SPRITE_FALLBACK[view['sprite']]
             icons += 1
-    print('icons replaced:', icons)
+    print('icons replaced:', icons, 'actions added:', len(give))
     raw = json.dumps(R, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
-    open(DST, 'wb').write(refs_codec.enc(raw))
-    print('actions added:', len(give), '->', DST, os.path.getsize(DST))
+    return refs_codec.enc(raw)
+
+
+def main():
+    open(DST, 'wb').write(patch(open(SRC, 'rb').read()))
+    print('->', DST, os.path.getsize(DST))
 
 
 if __name__ == '__main__':
